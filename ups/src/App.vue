@@ -236,7 +236,7 @@
             </div>
           </div>
           
-          <div class="summary-card">
+          <div class="summary-card highlight bgb">
             <div class="summary-icon">📦</div>
             <div class="summary-content">
               <h4>包裹概览</h4>
@@ -933,6 +933,10 @@ body {
 
 .summary-card.highlight.accent {
   background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.summary-card.highlight.bgb {
+  background: linear-gradient(135deg, hwb(185 24% 4%) 0%, hwb(185 24% 4%) 100%);
 }
 
 .summary-icon {
