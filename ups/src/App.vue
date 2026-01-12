@@ -12,7 +12,7 @@
     <header class="main-header">
       <div class="header-content">
         <div class="logo-area">
-          <h1 class="main-title">📦 USPS, UPS & DHL国际运费与关税计算器</h1>
+          <h1 class="main-title">📦 国际运费与关税计算器</h1>
           <p class="main-subtitle">根据您的需求，shipping fee可帮助您选择最适合您的运输服务及预计送达时间</p>
         </div>
         <div class="header-info">
@@ -20,7 +20,7 @@
             <div class="info-icon">⚡</div>
             <div class="info-text">
               <h4>实时费率</h4>
-              <p>对接 USPS, UPS & DHL官方API</p>
+              <p>对接官方API</p>
             </div>
           </div>
           <div class="info-card">
