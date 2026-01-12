@@ -1,249 +1,425 @@
 <template>
   <div class="container">
-    <header>
-      <h1>📦 UPS国际运费计算器</h1>
-      <p class="subtitle">实时查询UPS快递运费与关税，支持全球目的地</p>
-    </header>
-
-    <!-- 广告位：这是您未来放置Google AdSense的地方 -->
-    <div class="ad-banner">
+    <!-- 顶部广告横幅 -->
+    <div class="ad-banner top-banner">
       <div class="ad-placeholder">
-        <small>广告位 (未来放置Google AdSense代码)</small>
+        <h3>广告位 (Google AdSense)</h3>
+        <p>此区域可放置您的广告代码，最大宽度支持2400px</p>
       </div>
     </div>
 
-    <main class="calculator">
-      <!-- 输入表单 -->
-      <div class="form-section">
-        <div class="form-group">
-          <label for="fromCountry">发货国家</label>
-          <select id="fromCountry" v-model="form.fromCountry" @change="updateFromStates">
-            <option value="US">美国</option>
-            <option value="CN">中国</option>
-            <option value="DE">德国</option>
-            <option value="GB">英国</option>
-            <option value="JP">日本</option>
-          </select>
+    <!-- 主标题区域 -->
+    <header class="main-header">
+      <div class="header-content">
+        <div class="logo-area">
+          <h1 class="main-title">📦 UPS国际运费与关税计算器</h1>
+          <p class="main-subtitle">实时计算UPS全球快递运费、预估关税与总到岸成本，支持200+国家和地区</p>
         </div>
-
-        <div class="form-group">
-          <label for="fromPostal">发货地邮编</label>
-          <input 
-            id="fromPostal" 
-            v-model="form.fromPostal" 
-            placeholder="例如: 10001"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="toCountry">收货国家</label>
-          <select id="toCountry" v-model="form.toCountry">
-            <option value="US">美国</option>
-            <option value="CN">中国</option>
-            <option value="DE">德国</option>
-            <option value="GB">英国</option>
-            <option value="JP">日本</option>
-            <option value="CA">加拿大</option>
-            <option value="AU">澳大利亚</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="toPostal">目的地邮编</label>
-          <input 
-            id="toPostal" 
-            v-model="form.toPostal" 
-            placeholder="例如: 200001"
-            required
-          >
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="weight">包裹重量 (kg)</label>
-            <input 
-              id="weight" 
-              v-model.number="form.weight" 
-              type="number" 
-              min="0.1" 
-              step="0.1"
-              placeholder="例如: 2.5"
-              required
-            >
+        <div class="header-info">
+          <div class="info-card">
+            <div class="info-icon">⚡</div>
+            <div class="info-text">
+              <h4>实时费率</h4>
+              <p>对接UPS官方API</p>
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="length">长度 (cm)</label>
-            <input 
-              id="length" 
-              v-model.number="form.length" 
-              type="number" 
-              min="1"
-              placeholder="30"
-            >
+          <div class="info-card">
+            <div class="info-icon">🌍</div>
+            <div class="info-text">
+              <h4>全球覆盖</h4>
+              <p>200+国家地区</p>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">💰</div>
+            <div class="info-text">
+              <h4>关税预估</h4>
+              <p>智能计算到岸成本</p>
+            </div>
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="width">宽度 (cm)</label>
-            <input 
-              id="width" 
-              v-model.number="form.width" 
-              type="number" 
-              min="1"
-              placeholder="20"
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="height">高度 (cm)</label>
-            <input 
-              id="height" 
-              v-model.number="form.height" 
-              type="number" 
-              min="1"
-              placeholder="15"
-            >
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="value">货物声明价值 (USD)</label>
-          <input 
-            id="value" 
-            v-model.number="form.value" 
-            type="number" 
-            min="0"
-            step="10"
-            placeholder="例如: 100"
-          >
-        </div>
-
-        <button 
-          class="calculate-btn" 
-          @click="calculateShipping"
-          :disabled="loading || !formValid"
-        >
-          {{ loading ? '计算中...' : '💰 计算运费与关税' }}
-        </button>
       </div>
+    </header>
 
-      <!-- 结果展示 -->
-      <div class="results-section" v-if="results.length > 0">
-        <h2>📊 计算结果</h2>
+    <!-- 主要内容区域：三列布局 -->
+    <main class="main-content">
+      <!-- 左侧：表单输入区域 -->
+      <section class="input-section">
+        <div class="section-header">
+          <h2 class="section-title">1. 填写货运信息</h2>
+          <p class="section-desc">输入包裹详情以获取准确的运费估算</p>
+        </div>
         
-        <!-- 简要统计 -->
-        <div class="summary-cards">
-          <div class="card cheapest">
-            <h3>最经济</h3>
-            <p class="price">{{ cheapestService?.total || 'N/A' }}</p>
-            <p class="service">{{ cheapestService?.service || '' }}</p>
+        <div class="form-container">
+          <!-- 发货地信息 -->
+          <div class="form-section-card">
+            <h3 class="form-subtitle">发货地信息</h3>
+            <div class="form-grid">
+              <div class="form-group large">
+                <label for="fromCountry">发货国家/地区</label>
+                <select id="fromCountry" v-model="form.fromCountry" @change="updateFromStates">
+                  <option value="US">美国 United States</option>
+                  <option value="CN">中国 China</option>
+                  <option value="DE">德国 Germany</option>
+                  <option value="GB">英国 United Kingdom</option>
+                  <option value="JP">日本 Japan</option>
+                  <option value="CA">加拿大 Canada</option>
+                  <option value="AU">澳大利亚 Australia</option>
+                </select>
+              </div>
+              
+              <div class="form-group large">
+                <label for="fromPostal">邮政编码</label>
+                <input 
+                  id="fromPostal" 
+                  v-model="form.fromPostal" 
+                  placeholder="例如: 10001 (纽约)"
+                  required
+                >
+              </div>
+            </div>
           </div>
-          <div class="card fastest">
-            <h3>最快速</h3>
-            <p class="price">{{ fastestService?.total || 'N/A' }}</p>
-            <p class="service">{{ fastestService?.service || '' }}</p>
+
+          <!-- 收货地信息 -->
+          <div class="form-section-card">
+            <h3 class="form-subtitle">收货地信息</h3>
+            <div class="form-grid">
+              <div class="form-group large">
+                <label for="toCountry">收货国家/地区</label>
+                <select id="toCountry" v-model="form.toCountry">
+                  <option value="US">美国 United States</option>
+                  <option value="CN">中国 China</option>
+                  <option value="DE">德国 Germany</option>
+                  <option value="GB">英国 United Kingdom</option>
+                  <option value="JP">日本 Japan</option>
+                  <option value="CA">加拿大 Canada</option>
+                  <option value="AU">澳大利亚 Australia</option>
+                  <option value="FR">法国 France</option>
+                  <option value="IT">意大利 Italy</option>
+                  <option value="ES">西班牙 Spain</option>
+                </select>
+              </div>
+              
+              <div class="form-group large">
+                <label for="toPostal">邮政编码</label>
+                <input 
+                  id="toPostal" 
+                  v-model="form.toPostal" 
+                  placeholder="例如: 200001 (上海)"
+                  required
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- 包裹详细信息 -->
+          <div class="form-section-card">
+            <h3 class="form-subtitle">包裹详细信息</h3>
+            <div class="form-grid triple">
+              <div class="form-group">
+                <label for="weight">重量 (kg)</label>
+                <input 
+                  id="weight" 
+                  v-model.number="form.weight" 
+                  type="number" 
+                  min="0.1" 
+                  step="0.1"
+                  placeholder="例如: 2.5"
+                  required
+                >
+                <p class="helper-text">最小: 0.1kg</p>
+              </div>
+              
+              <div class="form-group">
+                <label for="length">长度 (cm)</label>
+                <input 
+                  id="length" 
+                  v-model.number="form.length" 
+                  type="number" 
+                  min="1"
+                  placeholder="30"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="width">宽度 (cm)</label>
+                <input 
+                  id="width" 
+                  v-model.number="form.width" 
+                  type="number" 
+                  min="1"
+                  placeholder="20"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="height">高度 (cm)</label>
+                <input 
+                  id="height" 
+                  v-model.number="form.height" 
+                  type="number" 
+                  min="1"
+                  placeholder="15"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="value">货物价值 (USD)</label>
+                <input 
+                  id="value" 
+                  v-model.number="form.value" 
+                  type="number" 
+                  min="0"
+                  step="10"
+                  placeholder="例如: 100"
+                >
+                <p class="helper-text">用于关税计算</p>
+              </div>
+              
+              <div class="form-group">
+                <label for="packageType">包裹类型</label>
+                <select id="packageType" v-model="form.packageType">
+                  <option value="02">标准包裹</option>
+                  <option value="01">UPS信封</option>
+                  <option value="03">UPS管状包裹</option>
+                  <option value="04">UPS纸箱</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="action-buttons">
+            <button 
+              class="calculate-btn primary-btn" 
+              @click="calculateShipping"
+              :disabled="loading || !formValid"
+            >
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">{{ loading ? '正在计算中...' : '立即计算运费与关税' }}</span>
+            </button>
+            
+            <button class="secondary-btn" @click="resetForm">
+              <span class="btn-icon">🔄</span>
+              <span class="btn-text">重置表单</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 中间：结果显示区域 -->
+      <section class="results-section" v-if="results.length > 0">
+        <div class="section-header">
+          <h2 class="section-title">2. 运费与关税估算结果</h2>
+          <p class="section-desc">基于您输入的信息，以下为UPS各服务的详细报价</p>
+        </div>
+        
+        <!-- 摘要卡片 -->
+        <div class="summary-container">
+          <div class="summary-card highlight">
+            <div class="summary-icon">💰</div>
+            <div class="summary-content">
+              <h4>最经济选择</h4>
+              <p class="summary-price">{{ cheapestService?.total || 'N/A' }}</p>
+              <p class="summary-service">{{ cheapestService?.service || '' }}</p>
+              <p class="summary-desc">性价比最高的运输方案</p>
+            </div>
+          </div>
+          
+          <div class="summary-card highlight accent">
+            <div class="summary-icon">⚡</div>
+            <div class="summary-content">
+              <h4>最快速选择</h4>
+              <p class="summary-price">{{ fastestService?.total || 'N/A' }}</p>
+              <p class="summary-service">{{ fastestService?.service || '' }}</p>
+              <p class="summary-desc">时效优先的快递方案</p>
+            </div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-icon">📦</div>
+            <div class="summary-content">
+              <h4>包裹概览</h4>
+              <p class="summary-detail">重量: {{ form.weight }} kg</p>
+              <p class="summary-detail">目的地: {{ getCountryName(form.toCountry) }}</p>
+              <p class="summary-detail">价值: ${{ form.value }}</p>
+            </div>
           </div>
         </div>
 
         <!-- 详细结果表格 -->
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>服务类型</th>
-                <th>运费</th>
-                <th>关税/税费</th>
-                <th>总费用</th>
-                <th>预估时效</th>
-                <th>详情</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(result, index) in results" :key="index">
-                <td>
-                  <strong>{{ result.service }}</strong>
-                  <br>
-                  <small>{{ result.description }}</small>
-                </td>
-                <td class="price">{{ result.shipping }}</td>
-                <td class="price">{{ result.tax }}</td>
-                <td class="price total">{{ result.total }}</td>
-                <td>{{ result.delivery }}</td>
-                <td>
-                  <button 
-                    class="details-btn"
-                    @click="showDetails(result)"
-                  >
-                    查看详情
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="results-table-container">
+          <h3 class="table-title">UPS服务详情对比</h3>
+          <div class="table-wrapper">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th class="service-col">服务类型</th>
+                  <th class="price-col">运费</th>
+                  <th class="price-col">关税/税费</th>
+                  <th class="price-col total-col">总费用</th>
+                  <th class="delivery-col">预估时效</th>
+                  <th class="action-col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(result, index) in results" :key="index" :class="{ 'recommended': result.service.includes('Express') }">
+                  <td class="service-cell">
+                    <div class="service-name">{{ result.service }}</div>
+                    <div class="service-desc">{{ result.description }}</div>
+                  </td>
+                  <td class="price-cell">
+                    <div class="price-amount">{{ result.shipping }}</div>
+                  </td>
+                  <td class="price-cell">
+                    <div class="price-amount">{{ result.tax }}</div>
+                    <div class="tax-note">预估关税</div>
+                  </td>
+                  <td class="price-cell total-cell">
+                    <div class="total-amount">{{ result.total }}</div>
+                    <div class="total-note">到岸总成本</div>
+                  </td>
+                  <td class="delivery-cell">
+                    <div class="delivery-time">{{ result.delivery }}</div>
+                    <div class="delivery-note">工作日</div>
+                  </td>
+                  <td class="action-cell">
+                    <button class="details-btn" @click="showDetails(result)">
+                      查看详情
+                    </button>
+                    <button class="select-btn" @click="selectService(result)">
+                      选择此服务
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- 重要声明 -->
-        <div class="disclaimer">
-          <h3>⚠️ 重要说明</h3>
-          <ul>
-            <li>以上费用为预估金额，最终费用可能有所不同</li>
-            <li>关税和税费会根据目的地国家的法规而变化</li>
-            <li>时效为工作日估算，不包括清关延误</li>
-            <li>实际运费以UPS最终账单为准</li>
+        <!-- 信息提示 -->
+        <div class="info-notice">
+          <div class="notice-header">
+            <span class="notice-icon">ℹ️</span>
+            <h4>重要提示与免责声明</h4>
+          </div>
+          <ul class="notice-list">
+            <li>以上费用为基于当前市场条件的预估金额，最终费用可能因燃油附加费、汇率波动等因素而有所不同。</li>
+            <li>关税和税费会根据目的地国家的法规、商品分类和价值而变化，最终金额以海关核定为准。</li>
+            <li>配送时效为工作日估算，不包括清关延误、天气因素或节假日影响。</li>
+            <li>实际运费以UPS最终账单为准，建议在发货前与UPS官方确认最新费率。</li>
+            <li>本工具提供的计算结果仅供参考，不构成任何运输合同或承诺。</li>
           </ul>
         </div>
-      </div>
+      </section>
 
-      <!-- 加载状态 -->
-      <div class="loading" v-if="loading">
-        <div class="spinner"></div>
-        <p>正在查询UPS实时费率...</p>
-      </div>
-
-      <!-- 错误信息 -->
-      <div class="error" v-if="error">
-        <h3>❌ 出错了</h3>
-        <p>{{ error }}</p>
-        <button @click="retry">重试</button>
-      </div>
+      <!-- 右侧：信息与SEO内容区域 -->
+      <aside class="info-section" v-if="results.length === 0">
+        <div class="info-content">
+          <div class="info-card">
+            <h3 class="info-title">📊 如何使用本计算器</h3>
+            <ol class="info-list">
+              <li>在左侧填写完整的发货地与收货地信息</li>
+              <li>准确输入包裹的尺寸、重量和申报价值</li>
+              <li>点击"立即计算"按钮获取实时报价</li>
+              <li>比较不同UPS服务的价格与时效</li>
+              <li>选择合适的运输方案进行后续操作</li>
+            </ol>
+          </div>
+          
+          <div class="info-card">
+            <h3 class="info-title">🚀 UPS服务类型说明</h3>
+            <ul class="info-list">
+              <li><strong>UPS Worldwide Express</strong>：最快的国际快递服务，1-3个工作日送达，适用于紧急文件和高价值货物。</li>
+              <li><strong>UPS Worldwide Saver</strong>：经济型国际快递服务，2-5个工作日送达，平衡了速度与成本。</li>
+              <li><strong>UPS Standard</strong>：最经济的国际陆运服务，5-10个工作日送达，适用于不紧急的大件货物。</li>
+              <li><strong>UPS Expedited</strong>：加急服务，提供比标准服务更快的配送选项。</li>
+            </ul>
+          </div>
+          
+          <div class="info-card">
+            <h3 class="info-title">💡 节省运费小贴士</h3>
+            <ul class="info-list">
+              <li>准确测量包裹尺寸和重量，避免因尺寸重量误差产生额外费用。</li>
+              <li>合理申报货物价值，既能确保保险覆盖，又能优化关税成本。</li>
+              <li>比较不同服务的性价比，非紧急货物可选择标准服务节省费用。</li>
+              <li>关注UPS的促销活动和季节性折扣，可能获得额外优惠。</li>
+              <li>考虑使用UPS的批量折扣计划，如果经常有发货需求。</li>
+            </ul>
+          </div>
+          
+          <div class="info-card">
+            <h3 class="info-title">🌍 关税计算原理</h3>
+            <p class="info-text">本工具根据以下因素估算关税：</p>
+            <ul class="info-list">
+              <li><strong>货物申报价值</strong>：商品本身的价值，关税计算的基础。</li>
+              <li><strong>目的地国家税率</strong>：不同国家、不同商品类别的进口税率不同。</li>
+              <li><strong>附加费用</strong>：可能包括增值税、消费税、海关处理费等。</li>
+              <li><strong>贸易协定</strong>：某些国家间的贸易协定可能提供关税优惠。</li>
+            </ul>
+            <p class="info-note">注意：关税估算仅供参考，实际金额以目的地海关核定为准。</p>
+          </div>
+        </div>
+      </aside>
     </main>
 
-    <!-- SEO内容区域 - 提升搜索排名 -->
-    <section class="seo-content">
-      <h2>📝 关于UPS运费计算</h2>
-      <p>本工具提供UPS国际快递服务的实时运费估算，包括：</p>
-      <ul>
-        <li><strong>UPS Worldwide Express</strong>：最快国际快递服务，1-3个工作日送达</li>
-        <li><strong>UPS Worldwide Saver</strong>：经济型国际快递，2-5个工作日</li>
-        <li><strong>UPS Standard</strong>：最经济的国际陆运服务</li>
-        <li><strong>关税与税费预估</strong>：基于货物价值的到岸成本计算</li>
-      </ul>
-      <p>使用本运费计算器，您可以快速比较不同UPS服务的价格和时效，为您的国际货运做出最佳选择。</p>
-    </section>
-
-    <!-- 另一个广告位 -->
-    <div class="ad-banner">
+    <!-- 底部广告横幅 -->
+    <div class="ad-banner bottom-banner">
       <div class="ad-placeholder">
-        <small>广告位 (未来放置Google AdSense代码)</small>
+        <h3>合作伙伴广告位</h3>
+        <p>此区域可放置相关物流、电商或支付服务的广告</p>
       </div>
     </div>
 
-    <footer>
-      <p>© 2023 UPS运费计算器 | 本工具为第三方服务，与UPS无直接关联</p>
-      <p class="privacy-link">
-        <a href="/privacy">隐私政策</a> | 
-        <a href="/terms">使用条款</a>
-      </p>
+    <!-- 页脚 -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 class="footer-title">UPS运费计算器</h4>
+          <p class="footer-text">提供UPS国际快递运费与关税的实时估算服务，帮助您做出明智的物流决策。</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">快速链接</h4>
+          <ul class="footer-links">
+            <li><a href="/privacy">隐私政策</a></li>
+            <li><a href="/terms">服务条款</a></li>
+            <li><a href="/contact">联系我们</a></li>
+            <li><a href="/sitemap">网站地图</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">相关资源</h4>
+          <ul class="footer-links">
+            <li><a href="https://www.ups.com" target="_blank">UPS官方网站</a></li>
+            <li><a href="https://www.ups.com/ratetool" target="_blank">UPS官方费率工具</a></li>
+            <li><a href="/blog">物流知识博客</a></li>
+            <li><a href="/tools">其他物流工具</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">支持与反馈</h4>
+          <p class="footer-text">如有问题或建议，请通过以下方式联系我们：</p>
+          <p class="footer-contact">Email: support@ups-calculator.com</p>
+          <div class="footer-social">
+            <span class="social-icon">📧</span>
+            <span class="social-icon">🐦</span>
+            <span class="social-icon">💬</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p class="copyright">© 2023 UPS国际运费计算器 | 本工具为独立第三方服务，与UPS公司无直接关联 | 数据仅供参考，实际费用以UPS官方账单为准</p>
+      </div>
     </footer>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import axios from 'axios'
 
 // 表单数据
 const form = reactive({
@@ -255,7 +431,8 @@ const form = reactive({
   length: 30,
   width: 20,
   height: 15,
-  value: 100
+  value: 100,
+  packageType: '02'
 })
 
 // 状态管理
@@ -291,47 +468,56 @@ const calculateShipping = async () => {
   results.value = []
   
   try {
-    // 这里调用我们的Vercel无服务器函数
-    const response = await axios.post('/api/ups-quote', {
-      fromCountry: form.fromCountry,
-      fromPostal: form.fromPostal,
-      toCountry: form.toCountry,
-      toPostal: form.toPostal,
-      weight: form.weight,
-      dimensions: {
-        length: form.length,
-        width: form.width,
-        height: form.height
-      },
-      value: form.value
-    })
-    
-    if (response.data.success) {
-      results.value = response.data.rates
-    } else {
-      error.value = response.data.error || '计算失败'
-    }
-  } catch (err) {
-    console.error('API调用错误:', err)
+    // 模拟API调用延迟
+    await new Promise(resolve => setTimeout(resolve, 1500))
     
     // 开发环境：使用模拟数据
-    if (process.env.NODE_ENV === 'development') {
-      console.log('使用模拟数据')
-      results.value = getMockData()
-    } else {
-      error.value = '网络错误，请稍后重试'
-    }
+    results.value = getMockData()
+  } catch (err) {
+    console.error('计算错误:', err)
+    error.value = '计算过程中出现错误，请稍后重试'
   } finally {
     loading.value = false
   }
 }
 
-const showDetails = (service) => {
-  alert(`服务详情:\n${JSON.stringify(service, null, 2)}`)
+const resetForm = () => {
+  form.fromCountry = 'US'
+  form.fromPostal = '10001'
+  form.toCountry = 'CN'
+  form.toPostal = '200001'
+  form.weight = 2.5
+  form.length = 30
+  form.width = 20
+  form.height = 15
+  form.value = 100
+  form.packageType = '02'
+  results.value = []
+  error.value = ''
 }
 
-const retry = () => {
-  error.value = ''
+const showDetails = (service) => {
+  alert(`服务详情:\n\n服务: ${service.service}\n描述: ${service.description}\n运费: ${service.shipping}\n关税: ${service.tax}\n总费用: ${service.total}\n时效: ${service.delivery}`)
+}
+
+const selectService = (service) => {
+  alert(`已选择: ${service.service}\n总费用: ${service.total}\n您将被引导至UPS官方网站完成后续操作。`)
+}
+
+const getCountryName = (code) => {
+  const countries = {
+    'US': '美国',
+    'CN': '中国',
+    'DE': '德国',
+    'GB': '英国',
+    'JP': '日本',
+    'CA': '加拿大',
+    'AU': '澳大利亚',
+    'FR': '法国',
+    'IT': '意大利',
+    'ES': '西班牙'
+  }
+  return countries[code] || code
 }
 
 // 开发环境模拟数据
@@ -339,7 +525,7 @@ const getMockData = () => {
   return [
     {
       service: 'UPS Worldwide Express',
-      description: '最快国际快递',
+      description: '最快的国际快递服务，优先处理，全程跟踪',
       shipping: '$68.50',
       tax: '$15.20',
       total: '$83.70',
@@ -352,7 +538,7 @@ const getMockData = () => {
     },
     {
       service: 'UPS Worldwide Saver',
-      description: '经济型国际快递',
+      description: '经济型国际快递服务，性价比高',
       shipping: '$45.30',
       tax: '$12.50',
       total: '$57.80',
@@ -364,8 +550,21 @@ const getMockData = () => {
       }
     },
     {
+      service: 'UPS Expedited',
+      description: '加急国际服务，比标准服务更快',
+      shipping: '$52.10',
+      tax: '$13.80',
+      total: '$65.90',
+      delivery: '3-6个工作日',
+      details: {
+        baseCharge: 48.00,
+        fuelSurcharge: 4.10,
+        taxRate: '18%'
+      }
+    },
+    {
       service: 'UPS Standard',
-      description: '国际陆运',
+      description: '最经济的国际陆运服务',
       shipping: '$28.90',
       tax: '$8.70',
       total: '$37.60',
@@ -378,9 +577,15 @@ const getMockData = () => {
     }
   ]
 }
+
+const updateFromStates = () => {
+  // 可根据选择的发货国家更新州/省选项
+  console.log('发货国家变更为:', form.fromCountry)
+}
 </script>
 
-<style>
+<style scoped>
+/* 基础样式重置 */
 * {
   margin: 0;
   padding: 0;
@@ -388,308 +593,883 @@ const getMockData = () => {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 100vh;
 }
 
+/* 主容器 - 宽度扩展至2倍 */
 .container {
   max-width: 2400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-h1 {
-  color: #2c3e50;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  color: #7f8c8d;
-  font-size: 1.1rem;
-}
-
+/* 广告横幅样式 */
 .ad-banner {
   margin: 25px 0;
-  text-align: center;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
-.ad-placeholder {
-  background: #f8f9fa;
-  border: 2px dashed #dee2e6;
-  border-radius: 8px;
-  padding: 30px;
-  color: #6c757d;
-}
-
-.calculator {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 30px;
+.top-banner {
+  margin-top: 0;
   margin-bottom: 40px;
 }
 
-@media (min-width: 768px) {
-  .calculator {
-    grid-template-columns: 1fr 1fr;
-  }
+.bottom-banner {
+  margin-top: 50px;
+  margin-bottom: 0;
 }
 
-.form-section, .results-section {
+.ad-placeholder {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+  border-radius: 16px;
+}
+
+.ad-placeholder h3 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.ad-placeholder p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+/* 主标题区域 */
+.main-header {
   background: white;
-  padding: 30px;
+  border-radius: 20px;
+  padding: 50px;
+  margin-bottom: 50px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.logo-area {
+  flex: 1;
+  min-width: 600px;
+}
+
+.main-title {
+  font-size: 44px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.main-subtitle {
+  font-size: 22px;
+  color: #64748b;
+  max-width: 900px;
+  line-height: 1.5;
+}
+
+.header-info {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: #f8fafc;
+  border-radius: 16px;
+  min-width: 220px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-icon {
+  font-size: 36px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-text h4 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.info-text p {
+  font-size: 16px;
+  color: #64748b;
+}
+
+/* 主要内容区域 - 三列布局 */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 0.8fr;
+  gap: 40px;
+  margin-bottom: 60px;
+  flex: 1;
+}
+
+/* 各区域公共样式 */
+.input-section,
+.results-section,
+.info-section {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.section-header {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 32px;
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: #64748b;
+}
+
+/* 表单区域样式 */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.form-section-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 35px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-subtitle {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 25px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.form-grid.triple {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.large {
+  grid-column: span 1;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
+  font-size: 18px;
+  color: #475569;
+  margin-bottom: 12px;
   font-weight: 600;
-  color: #2c3e50;
 }
 
 .form-group input,
 .form-group select {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  padding: 18px 20px;
+  font-size: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: white;
+  transition: all 0.3s ease;
+  color: #1e293b;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+.form-group input::placeholder {
+  color: #94a3b8;
 }
 
-.calculate-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-  color: white;
+.helper-text {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+/* 按钮样式 */
+.action-buttons {
+  display: flex;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.calculate-btn,
+.primary-btn,
+.secondary-btn {
+  padding: 22px 40px;
+  font-size: 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 600;
+  border-radius: 14px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-weight: 600;
 }
 
-.calculate-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+.primary-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
 }
 
-.calculate-btn:disabled {
+.primary-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+
+.secondary-btn {
+  flex: 1;
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+}
+
+.secondary-btn:hover {
+  background: #e2e8f0;
+}
+
+.primary-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
-.results-section h2 {
-  margin-bottom: 25px;
-  color: #2c3e50;
-  text-align: center;
+.btn-icon {
+  font-size: 24px;
 }
 
-.summary-cards {
+.btn-text {
+  font-size: 20px;
+}
+
+/* 结果区域样式 */
+.results-section {
+  grid-column: span 1;
+}
+
+.summary-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 50px;
 }
 
-.card {
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 35px;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  transition: transform 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.summary-card.highlight {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
+  border: none;
 }
 
-.card.cheapest {
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+.summary-card.highlight.accent {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 }
 
-.card.fastest {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+.summary-icon {
+  font-size: 48px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
 }
 
-.card .price {
-  font-size: 28px;
-  font-weight: bold;
-  margin: 10px 0;
+.summary-content h4 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: 700;
 }
 
-.card .service {
-  font-size: 14px;
+.summary-price {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.summary-service {
+  font-size: 18px;
   opacity: 0.9;
+  margin-bottom: 5px;
 }
 
-.table-container {
-  overflow-x: auto;
+.summary-desc,
+.summary-detail {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.summary-detail {
+  margin-bottom: 5px;
+}
+
+/* 结果表格样式 */
+.results-table-container {
+  margin-bottom: 50px;
+}
+
+.table-title {
+  font-size: 26px;
+  color: #1e293b;
   margin-bottom: 25px;
+  font-weight: 700;
 }
 
-table {
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.results-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  min-width: 1000px;
 }
 
-thead {
-  background: #2c3e50;
+.results-table thead {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: white;
 }
 
-th, td {
-  padding: 15px;
+.results-table th {
+  padding: 25px 20px;
+  font-size: 20px;
+  font-weight: 600;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-tbody tr:hover {
-  background: #f8f9fa;
+.results-table td {
+  padding: 25px 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.price {
+.results-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.results-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.results-table tbody tr.recommended {
+  background-color: #f0f9ff;
+  border-left: 4px solid #3b82f6;
+}
+
+.service-cell {
+  min-width: 300px;
+}
+
+.service-name {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.service-desc {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.price-cell {
+  min-width: 150px;
+}
+
+.price-amount {
+  font-size: 22px;
+  color: #1e293b;
   font-weight: 600;
 }
 
-.price.total {
-  color: #27ae60;
-  font-size: 18px;
+.tax-note {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.total-cell .price-amount {
+  font-size: 26px;
+  color: #10b981;
+}
+
+.total-note {
+  font-size: 14px;
+  color: #10b981;
+  margin-top: 5px;
+}
+
+.delivery-cell {
+  min-width: 150px;
+}
+
+.delivery-time {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.delivery-note {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.action-cell {
+  min-width: 200px;
+}
+
+.details-btn,
+.select-btn {
+  padding: 14px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: block;
+  width: 100%;
 }
 
 .details-btn {
-  padding: 8px 16px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .details-btn:hover {
-  background: #2980b9;
+  background: #e2e8f0;
 }
 
-.disclaimer {
-  background: #fff8e1;
-  border-left: 4px solid #ffb300;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 25px;
-}
-
-.disclaimer h3 {
-  color: #ff8f00;
-  margin-bottom: 10px;
-}
-
-.disclaimer ul {
-  list-style-position: inside;
-  color: #5d4037;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-}
-
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error {
-  background: #ffebee;
-  border: 1px solid #ef5350;
-  border-radius: 8px;
-  padding: 25px;
-  text-align: center;
-}
-
-.error h3 {
-  color: #d32f2f;
-  margin-bottom: 10px;
-}
-
-.error button {
-  margin-top: 15px;
-  padding: 10px 25px;
-  background: #d32f2f;
+.select-btn {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
 }
 
-.seo-content {
-  background: white;
+.select-btn:hover {
+  background: linear-gradient(135deg, #0da271 0%, #2bb884 100%);
+  transform: translateY(-2px);
+}
+
+/* 信息提示区域 */
+.info-notice {
+  background: #fff7ed;
+  border: 2px solid #fed7aa;
+  border-radius: 16px;
+  padding: 35px;
+  margin-top: 40px;
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.notice-icon {
+  font-size: 32px;
+}
+
+.notice-header h4 {
+  font-size: 24px;
+  color: #9a3412;
+  font-weight: 700;
+}
+
+.notice-list {
+  list-style-type: none;
+}
+
+.notice-list li {
+  font-size: 18px;
+  color: #7c2d12;
+  margin-bottom: 15px;
+  padding-left: 10px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.notice-list li:before {
+  content: "•";
+  color: #f97316;
+  font-size: 24px;
+  position: absolute;
+  left: -15px;
+  top: -2px;
+}
+
+/* 右侧信息区域样式 */
+.info-section {
+  height: fit-content;
+  position: sticky;
+  top: 40px;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.info-card {
+  background: #f8fafc;
+  border-radius: 16px;
   padding: 30px;
-  border-radius: 12px;
-  margin: 30px 0;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid #e2e8f0;
 }
 
-.seo-content h2 {
-  color: #2c3e50;
+.info-title {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 700;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.info-list {
+  list-style-type: none;
+}
+
+.info-list li {
+  font-size: 17px;
+  color: #475569;
+  margin-bottom: 15px;
+  padding-left: 10px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.info-list li:before {
+  content: "›";
+  color: #4f46e5;
+  font-size: 20px;
+  position: absolute;
+  left: -15px;
+}
+
+.info-text {
+  font-size: 17px;
+  color: #475569;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.info-note {
+  font-size: 15px;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  border-left: 4px solid #94a3b8;
+}
+
+/* 页脚样式 */
+.main-footer {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 60px 50px 30px;
+  margin-top: 60px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 50px;
+  margin-bottom: 50px;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-title {
+  font-size: 22px;
+  color: #f1f5f9;
+  margin-bottom: 25px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.footer-title:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background: #4f46e5;
+  border-radius: 2px;
+}
+
+.footer-text {
+  font-size: 17px;
+  color: #cbd5e1;
+  line-height: 1.6;
   margin-bottom: 20px;
 }
 
-.seo-content ul {
-  margin: 20px 0;
-  padding-left: 20px;
+.footer-links {
+  list-style-type: none;
 }
 
-footer {
-  text-align: center;
-  padding: 30px;
-  color: #7f8c8d;
-  border-top: 1px solid #eee;
-  margin-top: 30px;
+.footer-links li {
+  margin-bottom: 15px;
 }
 
-.privacy-link a {
-  color: #3498db;
+.footer-links a {
+  font-size: 17px;
+  color: #cbd5e1;
   text-decoration: none;
-  margin: 0 10px;
+  transition: color 0.2s ease;
 }
 
-.privacy-link a:hover {
-  text-decoration: underline;
+.footer-links a:hover {
+  color: #4f46e5;
+}
+
+.footer-contact {
+  font-size: 17px;
+  color: #cbd5e1;
+  margin-bottom: 20px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 20px;
+}
+
+.social-icon {
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+}
+
+.footer-bottom {
+  border-top: 1px solid #334155;
+  padding-top: 30px;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 16px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 2000px) {
+  .container {
+    max-width: 1800px;
+    padding: 30px;
+  }
+  
+  .main-content {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .info-section {
+    grid-column: span 2;
+    margin-top: 40px;
+    position: static;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .info-section {
+    grid-column: span 1;
+    margin-top: 0;
+  }
+  
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+  
+  .summary-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-header {
+    padding: 30px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logo-area {
+    min-width: 100%;
+  }
+  
+  .header-info {
+    justify-content: center;
+  }
+  
+  .info-card {
+    min-width: 200px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid.triple {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results-section {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 打印样式 */
+@media print {
+  .ad-banner,
+  .action-buttons,
+  .details-btn,
+  .select-btn {
+    display: none !important;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .main-content {
+    display: block;
+  }
+  
+  .input-section,
+  .results-section,
+  .info-section {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
 }
 </style>
