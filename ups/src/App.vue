@@ -504,14 +504,14 @@
       </div>
       
       <div class="footer-bottom">
-        <p class="copyright">© 2023 国际运费计算器 | 计算结果仅供参考，实际费用以各快递公司官方报价为准</p>
-        <p class="version">版本: 2.0.0 | 最后更新: 2023年12月</p>
+        <p class="copyright">© 2026 国际运费计算器 | 计算结果仅供参考，实际费用以各快递公司官方报价为准</p>
+        <p class="version">版本: 2.0.0 | 最后更新: 2026年1月</p>
       </div>
     </footer>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { Analytics } from '@vercel/analytics/vue'
 
