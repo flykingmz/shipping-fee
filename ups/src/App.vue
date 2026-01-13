@@ -58,7 +58,7 @@
               <div class="form-group">
                 <label for="fromCountry">发货国家</label>
                 <select id="fromCountry" v-model="form.fromCountry">
-                  <option v-for="country in countries" :value="country.code">
+                  <option v-for="country in countries" :value="country.code" :key="country.code">
                     {{ country.name }} ({{ country.code }})
                   </option>
                 </select>
@@ -72,7 +72,7 @@
               <div class="form-group">
                 <label for="toCountry">目的国家</label>
                 <select id="toCountry" v-model="form.toCountry">
-                  <option v-for="country in countries" :value="country.code">
+                  <option v-for="country in countries" :value="country.code" :key="country.code">
                     {{ country.name }} ({{ country.code }})
                   </option>
                 </select>
@@ -112,18 +112,6 @@
               </div>
               
               <div class="form-group">
-                <label for="volWeight">体积重量 (kg)</label>
-                <input id="volWeight" v-model.number="form.volWeight" type="number" min="0.1" step="0.1">
-                <p class="helper-text">长×宽×高(cm)/5000</p>
-              </div>
-              
-              <div class="form-group">
-                <label for="chargeableWeight">计费重量 (kg)</label>
-                <input id="chargeableWeight" v-model.number="form.chargeableWeight" type="number" readonly>
-                <p class="helper-text">取实际与体积重量较大值</p>
-              </div>
-              
-              <div class="form-group">
                 <label for="length">长度 (cm)</label>
                 <input id="length" v-model.number="form.length" type="number" min="1" required>
               </div>
@@ -136,6 +124,18 @@
               <div class="form-group">
                 <label for="height">高度 (cm)</label>
                 <input id="height" v-model.number="form.height" type="number" min="1" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="volWeight">体积重量 (kg)</label>
+                <input id="volWeight" v-model.number="form.volWeight" type="number" min="0.1" step="0.1" readonly>
+                <p class="helper-text">自动计算</p>
+              </div>
+              
+              <div class="form-group">
+                <label for="chargeableWeight">计费重量 (kg)</label>
+                <input id="chargeableWeight" v-model.number="form.chargeableWeight" type="number" readonly>
+                <p class="helper-text">取实际与体积重量较大值</p>
               </div>
               
               <div class="form-group">
@@ -192,7 +192,7 @@
               </div>
               
               <div class="form-group">
-                <label for="carriers">选择快递公司</label>
+                <label>选择快递公司</label>
                 <div class="carrier-selection">
                   <label class="carrier-checkbox">
                     <input type="checkbox" v-model="form.selectedCarriers" value="UPS"> UPS
@@ -213,15 +213,21 @@
 
           <!-- 操作按钮 -->
           <div class="action-buttons">
-            <button class="calculate-btn primary-btn" @click="calculateAllShipping" :disabled="loading">
+            <button class="calculate-btn primary-btn" @click="calculateAllShipping" :disabled="loading || form.selectedCarriers.length === 0">
               <span class="btn-icon">🚀</span>
-              <span class="btn-text">{{ loading ? '计算中...' : '计算四大快递费用' }}</span>
+              <span class="btn-text">{{ loading ? '计算中...' : '计算运费' }}</span>
             </button>
             
             <button class="secondary-btn" @click="resetForm">
               <span class="btn-icon">🔄</span>
               <span class="btn-text">重置表单</span>
             </button>
+          </div>
+          
+          <!-- 加载状态 -->
+          <div class="loading-overlay" v-if="loading">
+            <div class="loading-spinner"></div>
+            <p>正在计算四大快递费用...</p>
           </div>
         </div>
       </section>
@@ -258,7 +264,7 @@
               </div>
               <div class="summary-item">
                 <span class="label">计费重量</span>
-                <span class="value">{{ result.chargeableWeight }}kg</span>
+                <span class="value">{{ result.chargeableWeight.toFixed(2) }}kg</span>
               </div>
             </div>
             
@@ -310,7 +316,7 @@
         </div>
 
         <!-- 费用对比图表 -->
-        <div class="comparison-chart">
+        <div class="comparison-chart" v-if="results.length > 1">
           <h3>费用与时效对比分析</h3>
           <div class="chart-container">
             <div class="chart-bars">
@@ -371,6 +377,15 @@
             </div>
           </div>
         </div>
+        
+        <!-- 结果说明 -->
+        <div class="results-info">
+          <div class="info-icon">ℹ️</div>
+          <div class="info-content">
+            <h4>计算结果说明</h4>
+            <p>以上费用为估算值，实际费用可能因燃油费率变化、汇率波动、实际重量与体积重量的最终确认等因素有所不同。时效为工作日估算，不包含清关延误、天气因素或节假日影响。</p>
+          </div>
+        </div>
       </section>
 
       <!-- 右侧：信息与说明区域 -->
@@ -408,9 +423,35 @@
               <li>旺季附加费通常在10月-次年1月征收</li>
             </ul>
           </div>
+          
+          <div class="info-card">
+            <h3 class="info-title">📈 当前费率参考</h3>
+            <div class="rate-info">
+              <div class="rate-item">
+                <span>燃油附加费率</span>
+                <span class="rate-value">{{ currentFuelSurcharge }}%</span>
+              </div>
+              <div class="rate-item">
+                <span>数据更新时间</span>
+                <span class="rate-value">{{ currentMonth }}</span>
+              </div>
+              <div class="rate-item">
+                <span>支持国家</span>
+                <span class="rate-value">{{ countries.length }}个</span>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
     </main>
+
+    <!-- 底部广告横幅 -->
+    <div class="ad-banner bottom-banner">
+      <div class="ad-placeholder">
+        <h3>合作伙伴广告位</h3>
+        <p>此区域可放置相关物流、电商或支付服务的广告</p>
+      </div>
+    </div>
 
     <!-- 页脚 -->
     <footer class="main-footer">
@@ -421,14 +462,30 @@
         </div>
         
         <div class="footer-section">
-          <h4 class="footer-title">数据更新</h4>
-          <p class="footer-text">费率数据每月更新</p>
-          <p class="footer-text">燃油附加费：{{ currentFuelSurcharge }}% ({{ currentMonth }})</p>
+          <h4 class="footer-title">快速链接</h4>
+          <ul class="footer-links">
+            <li><a href="#" @click.prevent="scrollToTop">回到顶部</a></li>
+            <li><a href="#" @click.prevent="resetForm">重新计算</a></li>
+            <li><a href="#" @click.prevent="showHelp">使用帮助</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">数据声明</h4>
+          <p class="footer-text">费率数据每月更新，计算结果仅供参考</p>
+          <p class="footer-text">实际费用以各快递公司官方报价为准</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-title">支持与反馈</h4>
+          <p class="footer-text">如有问题或建议，请联系我们</p>
+          <p class="footer-email">contact@shipping-calculator.com</p>
         </div>
       </div>
       
       <div class="footer-bottom">
         <p class="copyright">© 2023 国际运费计算器 | 计算结果仅供参考，实际费用以各快递公司官方报价为准</p>
+        <p class="version">版本: 2.0.0 | 最后更新: 2023年12月</p>
       </div>
     </footer>
   </div>
@@ -467,11 +524,11 @@ const form = reactive({
   isRemoteArea: false,
   isResidential: false,
   weight: 2.5,
-  volWeight: 0,
-  chargeableWeight: 2.5,
   length: 30,
   width: 20,
   height: 15,
+  volWeight: 0,
+  chargeableWeight: 2.5,
   value: 100,
   isOversized: false,
   isPeakSeason: false,
@@ -490,14 +547,14 @@ const currentFuelSurcharge = ref(18.5) // 当前燃油附加费率
 // 监听尺寸变化计算体积重量
 watch([() => form.length, () => form.width, () => form.height], () => {
   if (form.length > 0 && form.width > 0 && form.height > 0) {
-    form.volWeight = (form.length * form.width * form.height) / 5000
+    form.volWeight = parseFloat(((form.length * form.width * form.height) / 5000).toFixed(2))
     form.chargeableWeight = Math.max(form.weight, form.volWeight)
   }
 })
 
 // 监听重量变化更新计费重量
-watch(() => form.weight, () => {
-  form.chargeableWeight = Math.max(form.weight, form.volWeight)
+watch(() => form.weight, (newWeight) => {
+  form.chargeableWeight = Math.max(newWeight, form.volWeight)
 })
 
 // 计算属性
@@ -532,17 +589,18 @@ const bestValueCarrier = computed(() => {
 
 // 主要计算方法
 const calculateAllShipping = async () => {
+  if (form.selectedCarriers.length === 0) {
+    alert('请至少选择一家快递公司')
+    return
+  }
+  
   loading.value = true
   results.value = []
   
+  // 模拟API调用延迟
+  await new Promise(resolve => setTimeout(resolve, 800))
+  
   try {
-    // 确保至少选择一家快递公司
-    if (form.selectedCarriers.length === 0) {
-      alert('请至少选择一家快递公司')
-      loading.value = false
-      return
-    }
-    
     // 计算计费重量
     const chargeableWeight = Math.max(form.weight, form.volWeight)
     
@@ -571,7 +629,7 @@ const calculateAllShipping = async () => {
       const minDays = Math.min(...allResults.map(r => r.deliveryDays))
       
       allResults.forEach(result => {
-        result.isCheapest = result.totalCost === minCost
+        result.isCheapest = Math.abs(result.totalCost - minCost) < 0.01
         result.isFastest = result.deliveryDays === minDays
       })
       
@@ -589,7 +647,7 @@ const calculateAllShipping = async () => {
 // UPS 费用计算
 const calculateUPS = (chargeableWeight) => {
   const baseRates = {
-    express: { firstKg: 45, additionalKg: 15 }, // 首重45美元，续重15美元/公斤
+    express: { firstKg: 45, additionalKg: 15 },
     standard: { firstKg: 32, additionalKg: 12 },
     economy: { firstKg: 28, additionalKg: 10 }
   }
@@ -601,28 +659,28 @@ const calculateUPS = (chargeableWeight) => {
     baseFreight += Math.ceil(chargeableWeight - 1) * rate.additionalKg
   }
   
-  // 燃油附加费 (当前18.5%)
+  // 燃油附加费
   const fuelSurcharge = baseFreight * (currentFuelSurcharge.value / 100)
   
-  // 偏远地区附加费 (基础运费的15%)
+  // 偏远地区附加费
   const remoteSurcharge = form.isRemoteArea ? baseFreight * 0.15 : 0
   
-  // 住宅配送费 (固定15美元)
+  // 住宅配送费
   const residentialFee = form.isResidential ? 15 : 0
   
-  // 超规格附加费 (如果尺寸或重量超标)
+  // 超规格附加费
   const oversizeFee = form.isOversized ? 40 : 0
   
-  // 旺季附加费 (10月-1月，基础运费的10%)
+  // 旺季附加费
   const peakSurcharge = form.isPeakSeason ? baseFreight * 0.10 : 0
   
-  // 保险费用 (申报价值的1%，最低5美元)
+  // 保险费用
   const insuranceCost = form.insurance ? Math.max(form.value * 0.01, 5) : 0
   
-  // 关税预付手续费 (固定15美元)
+  // 关税预付手续费
   const dutyFee = form.dutyPrepaid ? 15 : 0
   
-  // 预估关税 (基于目的国税率，美国一般10-15%)
+  // 预估关税
   const dutyRate = getDutyRate(form.toCountry)
   const estimatedDuty = form.value * (dutyRate / 100)
   
@@ -631,7 +689,7 @@ const calculateUPS = (chargeableWeight) => {
                    residentialFee + oversizeFee + peakSurcharge + 
                    insuranceCost + dutyFee + estimatedDuty
   
-  // 预估时效 (基于服务类型和目的地)
+  // 预估时效
   const deliveryDays = estimateDeliveryTime('UPS', form.serviceType, form.toCountry)
   
   return {
@@ -671,28 +729,14 @@ const calculateDHL = (chargeableWeight) => {
     baseFreight += Math.ceil(chargeableWeight - 1) * rate.additionalKg
   }
   
-  // DHL 燃油附加费 (与UPS相同)
   const fuelSurcharge = baseFreight * (currentFuelSurcharge.value / 100)
-  
-  // 偏远地区附加费 (基础运费的12%)
   const remoteSurcharge = form.isRemoteArea ? baseFreight * 0.12 : 0
-  
-  // 住宅配送费 (固定12美元)
   const residentialFee = form.isResidential ? 12 : 0
-  
-  // 超规格附加费
   const oversizeFee = form.isOversized ? 35 : 0
-  
-  // DHL 需求附加费/高峰期服务费 (基础运费的8%)
   const peakSurcharge = form.isPeakSeason ? baseFreight * 0.08 : 0
-  
-  // 保险费用
   const insuranceCost = form.insurance ? Math.max(form.value * 0.01, 5) : 0
-  
-  // 关税预付手续费
   const dutyFee = form.dutyPrepaid ? 12 : 0
   
-  // 预估关税
   const dutyRate = getDutyRate(form.toCountry)
   const estimatedDuty = form.value * (dutyRate / 100)
   
@@ -780,7 +824,6 @@ const calculateFedEx = (chargeableWeight) => {
 
 // EMS 费用计算
 const calculateEMS = (chargeableWeight) => {
-  // EMS 费率通常较低，但时效较长
   const baseRates = {
     express: { firstKg: 38, additionalKg: 12 },
     standard: { firstKg: 28, additionalKg: 10 },
@@ -794,13 +837,12 @@ const calculateEMS = (chargeableWeight) => {
     baseFreight += Math.ceil(chargeableWeight - 1) * rate.additionalKg
   }
   
-  // EMS 通常不收燃油附加费或较少附加费
-  const fuelSurcharge = baseFreight * 0.05 // 固定5%
+  const fuelSurcharge = baseFreight * 0.05
   const remoteSurcharge = form.isRemoteArea ? baseFreight * 0.10 : 0
   const residentialFee = form.isResidential ? 8 : 0
   const oversizeFee = form.isOversized ? 25 : 0
   const peakSurcharge = form.isPeakSeason ? baseFreight * 0.05 : 0
-  const insuranceCost = form.insurance ? Math.max(form.value * 0.008, 4) : 0 // EMS保险较便宜
+  const insuranceCost = form.insurance ? Math.max(form.value * 0.008, 4) : 0
   const dutyFee = form.dutyPrepaid ? 10 : 0
   
   const dutyRate = getDutyRate(form.toCountry)
@@ -818,7 +860,7 @@ const calculateEMS = (chargeableWeight) => {
     chargeableWeight,
     baseFreight,
     fuelSurcharge,
-    fuelRate: 5, // EMS固定5%
+    fuelRate: 5,
     remoteSurcharge,
     residentialFee,
     oversizeFee,
@@ -837,24 +879,24 @@ const calculateEMS = (chargeableWeight) => {
 // 辅助函数：获取关税税率
 const getDutyRate = (countryCode) => {
   const dutyRates = {
-    'US': 10,    // 美国平均税率10%
-    'CA': 12,    // 加拿大12%
-    'GB': 15,    // 英国15%
-    'DE': 16,    // 德国16%
-    'FR': 15,    // 法国15%
-    'IT': 15,    // 意大利15%
-    'ES': 15,    // 西班牙15%
-    'AU': 10,    // 澳大利亚10%
-    'JP': 8,     // 日本8%
-    'KR': 10,    // 韩国10%
-    'CN': 13,    // 中国13%
-    'HK': 0,     // 香港免税
-    'SG': 7,     // 新加坡7%
-    'MY': 10,    // 马来西亚10%
-    'TH': 15,    // 泰国15%
-    'VN': 15     // 越南15%
+    'US': 10,
+    'CA': 12,
+    'GB': 15,
+    'DE': 16,
+    'FR': 15,
+    'IT': 15,
+    'ES': 15,
+    'AU': 10,
+    'JP': 8,
+    'KR': 10,
+    'CN': 13,
+    'HK': 0,
+    'SG': 7,
+    'MY': 10,
+    'TH': 15,
+    'VN': 15
   }
-  return dutyRates[countryCode] || 10 // 默认10%
+  return dutyRates[countryCode] || 10
 }
 
 // 辅助函数：预估运输时间
@@ -870,25 +912,25 @@ const estimateDeliveryTime = (carrier, serviceType, toCountry) => {
   
   // 根据目的地调整
   const regionAdjustments = {
-    'US': 0,     // 北美
-    'CA': 1,     // 加拿大+1天
-    'GB': 1,     // 欧洲+1天
+    'US': 0,
+    'CA': 1,
+    'GB': 1,
     'DE': 1,
     'FR': 1,
     'IT': 1,
     'ES': 1,
-    'AU': 2,     // 澳洲+2天
-    'JP': 0,     // 亚洲主要国家
+    'AU': 2,
+    'JP': 0,
     'KR': 0,
     'SG': 0,
-    'MY': 1,     // 东南亚+1天
+    'MY': 1,
     'TH': 1,
     'VN': 1
   }
   
   days += regionAdjustments[toCountry] || 1
   
-  return Math.max(days, 2) // 最少2个工作日
+  return Math.max(days, 2)
 }
 
 // 辅助函数：获取服务名称
@@ -918,10 +960,10 @@ const getBarHeight = (value, type) => {
   
   if (type === 'cost') {
     const maxCost = Math.max(...results.value.map(r => r.totalCost))
-    return (value / maxCost) * 80 + 20 // 20-100%高度
+    return maxCost > 0 ? (value / maxCost) * 80 + 20 : 20
   } else {
     const maxDays = Math.max(...results.value.map(r => r.deliveryDays))
-    return (value / maxDays) * 80 + 20
+    return maxDays > 0 ? (value / maxDays) * 80 + 20 : 20
   }
 }
 
@@ -930,7 +972,7 @@ const showCarrierDetails = (carrier) => {
   const details = `
 快递公司: ${carrier.carrier}
 服务类型: ${carrier.serviceType}
-计费重量: ${carrier.chargeableWeight}kg
+计费重量: ${carrier.chargeableWeight.toFixed(2)}kg
 基础运费: $${carrier.baseFreight.toFixed(2)}
 燃油附加费: $${carrier.fuelSurcharge.toFixed(2)} (${carrier.fuelRate}%)
 偏远附加费: $${carrier.remoteSurcharge.toFixed(2)}
@@ -962,7 +1004,7 @@ const resetForm = () => {
   form.length = 30
   form.width = 20
   form.height = 15
-  form.volWeight = (30*20*15)/5000
+  form.volWeight = parseFloat(((30*20*15)/5000).toFixed(2))
   form.chargeableWeight = 2.5
   form.value = 100
   form.isOversized = false
@@ -973,9 +1015,393 @@ const resetForm = () => {
   form.selectedCarriers = ['UPS', 'DHL', 'FedEx', 'EMS']
   results.value = []
 }
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const showHelp = () => {
+  alert('使用帮助：\n1. 填写发货地和目的地信息\n2. 输入包裹详细信息和价值\n3. 选择需要的服务选项\n4. 勾选要比较的快递公司\n5. 点击"计算运费"获取报价')
+}
 </script>
 
 <style scoped>
+/* 基础样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+}
+
+/* 主容器 - 宽度扩展至2倍 */
+.container {
+  max-width: 2400px;
+  margin: 0 auto;
+  padding: 30px 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 广告横幅样式 */
+.ad-banner {
+  margin: 25px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.top-banner {
+  margin-top: 0;
+  margin-bottom: 40px;
+}
+
+.bottom-banner {
+  margin-top: 50px;
+  margin-bottom: 0;
+}
+
+.ad-placeholder {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+  border-radius: 16px;
+}
+
+.ad-placeholder h3 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.ad-placeholder p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+/* 主标题区域 */
+.main-header {
+  background: white;
+  border-radius: 20px;
+  padding: 50px;
+  margin-bottom: 50px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.logo-area {
+  flex: 1;
+  min-width: 600px;
+}
+
+.main-title {
+  font-size: 44px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.main-subtitle {
+  font-size: 22px;
+  color: #64748b;
+  max-width: 900px;
+  line-height: 1.5;
+}
+
+.header-info {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: #f8fafc;
+  border-radius: 16px;
+  min-width: 220px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-icon {
+  font-size: 36px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-text h4 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.info-text p {
+  font-size: 16px;
+  color: #64748b;
+}
+
+/* 主要内容区域 - 三列布局 */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 0.8fr;
+  gap: 40px;
+  margin-bottom: 60px;
+  flex: 1;
+}
+
+/* 各区域公共样式 */
+.input-section,
+.results-section,
+.info-section {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.section-header {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 32px;
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: #64748b;
+}
+
+/* 表单区域样式 */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  position: relative;
+}
+
+.form-section-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 35px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-subtitle {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 25px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.form-grid.triple {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 18px;
+  color: #475569;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  padding: 18px 20px;
+  font-size: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: white;
+  transition: all 0.3s ease;
+  color: #1e293b;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #94a3b8;
+}
+
+.form-group input[readonly] {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.helper-text {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+/* 快递公司选择器 */
+.carrier-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.carrier-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carrier-checkbox:hover {
+  background: #f1f5f9;
+}
+
+.carrier-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* 按钮样式 */
+.action-buttons {
+  display: flex;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.calculate-btn,
+.primary-btn,
+.secondary-btn {
+  padding: 22px 40px;
+  font-size: 20px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-weight: 600;
+}
+
+.primary-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+}
+
+.primary-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.secondary-btn {
+  flex: 1;
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+}
+
+.secondary-btn:hover {
+  background: #e2e8f0;
+}
+
+.btn-icon {
+  font-size: 24px;
+}
+
+.btn-text {
+  font-size: 20px;
+}
+
+/* 加载状态 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  z-index: 10;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4f46e5;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 快递公司卡片样式 */
 .carrier-comparison {
   display: grid;
@@ -1336,39 +1762,268 @@ const resetForm = () => {
   margin-bottom: 5px;
 }
 
-/* 快递公司选择器 */
-.carrier-selection {
+/* 结果说明 */
+.results-info {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 30px;
+  border-left: 4px solid #4f46e5;
+}
+
+.results-info .info-icon {
+  font-size: 28px;
+  width: 50px;
+  height: 50px;
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.results-info .info-content h4 {
+  font-size: 18px;
+  color: #1e293b;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.results-info .info-content p {
+  font-size: 16px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* 右侧信息区域样式 */
+.info-section {
+  height: fit-content;
+  position: sticky;
+  top: 40px;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.info-section .info-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 30px;
+  border: 1px solid #e2e8f0;
+  display: block;
+}
+
+.info-section .info-title {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 700;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.info-section .info-list {
+  list-style-type: none;
+}
+
+.info-section .info-list li {
+  font-size: 17px;
+  color: #475569;
+  margin-bottom: 15px;
+  padding-left: 10px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.info-section .info-list li:before {
+  content: "›";
+  color: #4f46e5;
+  font-size: 20px;
+  position: absolute;
+  left: -15px;
+}
+
+.info-section .info-text {
+  font-size: 17px;
+  color: #475569;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.rate-info {
+  display: flex;
+  flex-direction: column;
   gap: 15px;
+}
+
+.rate-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rate-item:last-child {
+  border-bottom: none;
+}
+
+.rate-item span:first-child {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.rate-item .rate-value {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* 页脚样式 */
+.main-footer {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 60px 50px 30px;
+  margin-top: 60px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 50px;
+  margin-bottom: 50px;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-title {
+  font-size: 22px;
+  color: #f1f5f9;
+  margin-bottom: 25px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.footer-title:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background: #4f46e5;
+  border-radius: 2px;
+}
+
+.footer-text {
+  font-size: 17px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  list-style-type: none;
+}
+
+.footer-links li {
+  margin-bottom: 15px;
+}
+
+.footer-links a {
+  font-size: 17px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.footer-links a:hover {
+  color: #4f46e5;
+}
+
+.footer-email {
+  font-size: 16px;
+  color: #94a3b8;
   margin-top: 10px;
 }
 
-.carrier-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 15px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 2px solid #e2e8f0;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.footer-bottom {
+  border-top: 1px solid #334155;
+  padding-top: 30px;
+  text-align: center;
 }
 
-.carrier-checkbox:hover {
-  background: #f1f5f9;
+.copyright {
+  font-size: 16px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 10px;
 }
 
-.carrier-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
+.version {
+  font-size: 14px;
+  color: #64748b;
 }
 
-/* 响应式调整 */
+/* 响应式设计 */
+@media (max-width: 2000px) {
+  .container {
+    max-width: 1800px;
+    padding: 30px;
+  }
+  
+  .main-content {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .info-section {
+    grid-column: span 2;
+    margin-top: 40px;
+    position: static;
+  }
+}
+
 @media (max-width: 1400px) {
   .carrier-comparison {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .info-section {
+    grid-column: span 1;
+    margin-top: 0;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .summary-container {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -1388,6 +2043,35 @@ const resetForm = () => {
 }
 
 @media (max-width: 768px) {
+  .main-header {
+    padding: 30px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logo-area {
+    min-width: 100%;
+  }
+  
+  .header-info {
+    justify-content: center;
+  }
+  
+  .info-card {
+    min-width: 200px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid.triple {
+    grid-template-columns: 1fr;
+  }
+  
   .carrier-comparison {
     grid-template-columns: 1fr;
   }
@@ -1413,8 +2097,59 @@ const resetForm = () => {
   .carrier-footer {
     flex-direction: column;
   }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
 }
 
-/* 更新原有的样式（保持与之前一致的部分） */
-/* ... 原有的.container, .main-header, .form-section-card等样式保持不变 ... */
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results-section {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 打印样式 */
+@media print {
+  .ad-banner,
+  .action-buttons,
+  .details-btn,
+  .select-btn,
+  .footer-links a {
+    display: none !important;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .main-content {
+    display: block;
+  }
+  
+  .input-section,
+  .results-section,
+  .info-section {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+}
 </style>
