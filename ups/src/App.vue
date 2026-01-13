@@ -1,4 +1,5 @@
 <template>
+  <Analytics />
   <div class="container">
     <!-- 顶部广告横幅 -->
     <div class="ad-banner top-banner">
@@ -508,17 +509,11 @@
       </div>
     </footer>
   </div>
-  <Analytics />
-  <!-- your content -->
 </template>
-
-<script setup lang="ts">
-import { Analytics } from '@vercel/analytics/vue'
-</script>
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
-
+import { Analytics } from '@vercel/analytics/vue'
 
 // 国家/地区列表
 const countries = [
