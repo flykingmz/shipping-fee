@@ -499,7 +499,7 @@
         <div class="footer-section">
           <h4 class="footer-title">支持与反馈</h4>
           <p class="footer-text">如有问题或建议，请联系我们</p>
-          <p class="footer-email">contact@shipping-calculator.com</p>
+          <p class="footer-email">flykingmz@gmail.com</p>
         </div>
       </div>
       
