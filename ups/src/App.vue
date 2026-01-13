@@ -8,9 +8,9 @@
         <p>实时比较UPS、DHL、FedEx、EMS四大快递服务</p>
       </div>
     </div>
-   <!-- JSON-LD 结构化数据 -->
+   <!-- JSON-LD 结构化数据 
     <script type="application/ld+json" v-html="structuredData"></script>
-    
+    -->
     <!-- 或者使用更简洁的方式 -->
     <script type="application/ld+json">
       {
