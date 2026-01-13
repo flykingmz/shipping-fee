@@ -23,6 +23,6 @@
   },
   "resolutions": {
     "vue": "^3.5.26",
-    "@vercel/analytics/vue": "^1.0.0"
+    "@vercel/analytics/vue": "^1.6.1"
   }
 }
