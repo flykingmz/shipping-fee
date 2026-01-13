@@ -512,6 +512,7 @@
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
+import { Analytics } from "@vercel/analytics/next"
 
 // 国家/地区列表
 const countries = [
