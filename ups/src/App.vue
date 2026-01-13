@@ -494,6 +494,34 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { Analytics } from '@vercel/analytics/vue'
+import { useHead } from '@vueuse/head'
+
+// 定义你的结构化数据
+const jsonLdData = computed(() => ({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "国际运费计算器",
+        "description": "免费在线计算UPS、DHL、FedEx、EMS国际快递运费与时效",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+}))
+
+// 注入到<head>
+useHead({
+  title: '我的Vue应用', // 同时设置标题
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify(jsonLdData.value)
+  }],
+  meta: [
+    { name: '国际运费计算器', content: '免费在线计算UPS、DHL、FedEx、EMS国际快递运费与时效' }
+  ]
+})
 
 // 国家/地区列表
 const countries = [
