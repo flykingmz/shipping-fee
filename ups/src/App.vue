@@ -7,6 +7,25 @@
         <p>实时比较UPS、DHL、FedEx、EMS四大快递服务</p>
       </div>
     </div>
+   <!-- JSON-LD 结构化数据 -->
+    <script type="application/ld+json" v-html="structuredData"></script>
+    
+    <!-- 或者使用更简洁的方式 -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://shipping-fee-mu.vercel.app/",
+        "@type": "WebApplication",
+        "name": "国际运费计算器",
+        "description": "免费在线计算UPS、DHL、FedEx、EMS国际快递运费与时效",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
 
     <!-- 主标题区域 -->
     <header class="main-header">
@@ -490,22 +509,6 @@
     </footer>
   </div>
 </template>
-
-<script type="application/ld+json">
-{
-  "@context": "https://shipping-fee-mu.vercel.app/",
-  "@type": "WebApplication",
-  "name": "国际运费计算器",
-  "description": "免费在线计算UPS、DHL、FedEx、EMS国际快递运费",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
-}
-</script>
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
