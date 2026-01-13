@@ -508,13 +508,14 @@
       </div>
     </footer>
   </div>
-   <Analytics />
+  <Analytics />
   <!-- your content -->
 </template>
 
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
 import { Analytics } from '@vercel/analytics/vue';
+
 
 // 国家/地区列表
 const countries = [
