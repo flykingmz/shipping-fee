@@ -10,13 +10,16 @@ importers:
     dependencies:
       '@vercel/analytics':
         specifier: ^1.6.1
-        version: 1.6.1(vue@3.5.26)
+        version: 1.6.1(vue-router@4.6.4(vue@3.5.26))(vue@3.5.26)
       axios:
         specifier: ^1.13.2
         version: 1.13.2
       vue:
         specifier: ^3.5.26
         version: 3.5.26
+      vue-router:
+        specifier: ^4.6.4
+        version: 4.6.4(vue@3.5.26)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^6.0.3
@@ -537,6 +540,9 @@ packages:
   '@vue/compiler-ssr@3.5.26':
     resolution: {integrity: sha512-lZT9/Y0nSIRUPVvapFJEVDbEXruZh2IYHMk2zTtEgJSlP5gVOqeWXH54xDKAaFS4rTnDeDBQUYDtxKyoW9FwDw==}
 
+  '@vue/devtools-api@6.6.4':
+    resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
+
   '@vue/devtools-core@8.0.5':
     resolution: {integrity: sha512-dpCw8nl0GDBuiL9SaY0mtDxoGIEmU38w+TQiYEPOLhW03VDC0lfNMYXS/qhl4I0YlysGp04NLY4UNn6xgD0VIQ==}
     peerDependencies:
@@ -963,6 +969,11 @@ packages:
       yaml:
         optional: true
 
+  vue-router@4.6.4:
+    resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
+    peerDependencies:
+      vue: ^3.5.0
+
   vue@3.5.26:
     resolution: {integrity: sha512-SJ/NTccVyAoNUJmkM9KUqPcYlY+u8OVL1X5EW9RIs3ch5H2uERxyyIUI4MRxVCSOiEcupX9xNGde1tL9ZKpimA==}
     peerDependencies:
@@ -1349,9 +1360,10 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-  '@vercel/analytics@1.6.1(vue@3.5.26)':
+  '@vercel/analytics@1.6.1(vue-router@4.6.4(vue@3.5.26))(vue@3.5.26)':
     optionalDependencies:
       vue: 3.5.26
+      vue-router: 4.6.4(vue@3.5.26)
 
   '@vitejs/plugin-vue@6.0.3(vite@7.3.1)(vue@3.5.26)':
     dependencies:
@@ -1417,6 +1429,8 @@ snapshots:
     dependencies:
       '@vue/compiler-dom': 3.5.26
       '@vue/shared': 3.5.26
+
+  '@vue/devtools-api@6.6.4': {}
 
   '@vue/devtools-core@8.0.5(vite@7.3.1)(vue@3.5.26)':
     dependencies:
@@ -1849,6 +1863,11 @@ snapshots:
       tinyglobby: 0.2.15
     optionalDependencies:
       fsevents: 2.3.3
+
+  vue-router@4.6.4(vue@3.5.26):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.26
 
   vue@3.5.26:
     dependencies:
