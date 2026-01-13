@@ -560,8 +560,8 @@ const form = reactive({
 // 状态管理
 const loading = ref(false)
 const results = ref([])
-const currentMonth = ref('2023年12月')
-const currentFuelSurcharge = ref(18.5) // 当前燃油附加费率
+const currentMonth = ref('2026年1月')
+const currentFuelSurcharge = ref(28.5) // 当前燃油附加费率
 
 // 监听尺寸变化计算体积重量
 watch([() => form.length, () => form.width, () => form.height], () => {
