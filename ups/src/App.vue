@@ -491,6 +491,22 @@
   </div>
 </template>
 
+<script type="application/ld+json">
+{
+  "@context": "https://shipping-fee-mu.vercel.app/",
+  "@type": "WebApplication",
+  "name": "国际运费计算器",
+  "description": "免费在线计算UPS、DHL、FedEx、EMS国际快递运费",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
 
