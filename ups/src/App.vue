@@ -513,7 +513,7 @@ const jsonLdData = computed(() => ({
 
 // 注入到<head>
 useHead({
-  title: '我的Vue应用', // 同时设置标题
+  title: '国际运费计算器', // 同时设置标题
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify(jsonLdData.value)
