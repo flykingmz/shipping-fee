@@ -324,14 +324,14 @@
             <div class="contact-info">
               <p class="contact-item">
                 <span class="contact-icon">📧</span>
-                <a href="mailto:support@globalpricecalculator.com" class="contact-link">
-                  support@globalpricecalculator.com
+                <a href="mailto:flykingmz@gmail.com" class="contact-link">
+                  flykingmz@gmail.com
                 </a>
               </p>
               <p class="contact-item">
                 <span class="contact-icon">🐦</span>
-                <a href="https://twitter.com/globalpricecalc" class="contact-link">
-                  @globalpricecalc
+                <a href="" class="contact-link">
+                  flykingmz@gmail.com
                 </a>
               </p>
               <p class="contact-item">
@@ -371,7 +371,38 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { Analytics } from '@vercel/analytics/vue'
+import { useHead } from '@vueuse/head'
+
+
+// 定义你的结构化数据
+const jsonLdData = computed(() => ({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "国际价格计算器",
+        "description": "智能计算全球商品价格 · 含税价 · 手续费 · 到手价",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+}))
+
+// 注入到<head>
+useHead({
+  title: '国际价格计算器', // 同时设置标题
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify(jsonLdData.value)
+  }],
+  meta: [
+    { name: '国际价格计算器', content: '智能计算全球商品价格 · 含税价 · 手续费 · 到手价' }
+  ]
+})
+
 export default {
   name: 'App',
   data() {
