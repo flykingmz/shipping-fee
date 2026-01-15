@@ -1,4 +1,5 @@
 <template>
+<Analytics />
   <div id="app">
     <!-- 上层：广告位和标题 -->
     <header class="header-layer">
