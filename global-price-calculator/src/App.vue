@@ -35,7 +35,7 @@
                 <span class="currency-prefix">$</span>
                 <input 
                   type="number" 
-                  v-model.number="basePrice" 
+                  v-model="basePrice" 
                   min="0" 
                   step="0.01" 
                   placeholder="输入价格"
@@ -52,8 +52,8 @@
               </label>
               <div class="select-container">
                 <select 
-                  v-model="selectedCountry" 
-                  @change="calculatePrices"
+                  v-model="selectedCountryKey" 
+                  @change="onCountryChange"
                   class="country-select"
                 >
                   <option value="">请选择国家/地区</option>
@@ -64,8 +64,8 @@
                   >
                     <option 
                       v-for="country in countries" 
-                      :key="country.country"
-                      :value="country"
+                      :key="country.key"
+                      :value="country.key"
                     >
                       {{ country.chineseName }} ({{ country.country }})
                     </option>
@@ -87,7 +87,7 @@
               <div class="slider-container">
                 <input 
                   type="range" 
-                  v-model.number="platformFeeRate" 
+                  v-model="platformFeeRate" 
                   min="0" 
                   max="15" 
                   step="0.5"
@@ -324,14 +324,14 @@
             <div class="contact-info">
               <p class="contact-item">
                 <span class="contact-icon">📧</span>
-                <a href="mailto:flykingmz@gmail.com" class="contact-link">
-                  flykingmz@gmail.com
+                <a href="mailto:support@globalpricecalculator.com" class="contact-link">
+                  support@globalpricecalculator.com
                 </a>
               </p>
               <p class="contact-item">
                 <span class="contact-icon">🐦</span>
-                <a href="" class="contact-link">
-                  flykingmz@gmail.com
+                <a href="https://twitter.com/globalpricecalc" class="contact-link">
+                  @globalpricecalc
                 </a>
               </p>
               <p class="contact-item">
@@ -372,15 +372,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { Analytics } from '@vercel/analytics/vue'
 import { useHead } from '@vueuse/head'
-
 
 // 定义你的结构化数据
 const jsonLdData = computed(() => ({
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "国际价格计算器",
+        "name": "国际商品价格计算器",
         "description": "智能计算全球商品价格 · 含税价 · 手续费 · 到手价",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Any",
@@ -393,213 +393,217 @@ const jsonLdData = computed(() => ({
 
 // 注入到<head>
 useHead({
-  title: '国际价格计算器', // 同时设置标题
+  title: '国际商品价格计算器', // 同时设置标题
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify(jsonLdData.value)
   }],
   meta: [
-    { name: '国际价格计算器', content: '智能计算全球商品价格 · 含税价 · 手续费 · 到手价' }
+    { name: '国际商品价格计算器', content: '智能计算全球商品价格 · 含税价 · 手续费 · 到手价' }
   ]
 })
 
-export default {
-  name: 'App',
-  data() {
-    return {
-      // 输入数据
-      basePrice: 100,
-      selectedCountry: null,
-      platformFeeRate: 5.0,
-      selectedCurrency: 'USD',
-      
-      // 计算结果
-      taxAmount: 0,
-      finalPrice: 0,
-      platformFee: 0,
-      netPrice: 0,
-      pricePercentage: 0,
-      taxPercentage: 0,
-      feePercentage: 0,
-      
-      // 全球税率数据
-      regions: {
-        Europe: [
-          {"country": "Austria", "chineseName": "奥地利", "rate": "20"},
-          {"country": "Belgium", "chineseName": "比利时", "rate": "21"},
-          {"country": "Bulgaria", "chineseName": "保加利亚", "rate": "20"},
-          {"country": "Croatia", "chineseName": "克罗地亚", "rate": "25"},
-          {"country": "Czech Republic", "chineseName": "捷克", "rate": "21"},
-          {"country": "Denmark", "chineseName": "丹麦", "rate": "25"},
-          {"country": "France", "chineseName": "法国", "rate": "20"},
-          {"country": "Germany", "chineseName": "德国", "rate": "19"},
-          {"country": "Hungary", "chineseName": "匈牙利", "rate": "27"},
-          {"country": "Ireland", "chineseName": "爱尔兰", "rate": "23"},
-          {"country": "Italy", "chineseName": "意大利", "rate": "22"},
-          {"country": "Netherlands", "chineseName": "荷兰", "rate": "21"},
-          {"country": "Norway", "chineseName": "挪威", "rate": "25"},
-          {"country": "Spain", "chineseName": "西班牙", "rate": "21"},
-          {"country": "Sweden", "chineseName": "瑞典", "rate": "25"},
-          {"country": "United Kingdom", "chineseName": "英国", "rate": "20"}
-        ],
-        Asia: [
-          {"country": "China", "chineseName": "中国", "rate": "13 / 9 / 6*"},
-          {"country": "India", "chineseName": "印度", "rate": "28 / 18 / 12 / 5 / 0*"},
-          {"country": "Indonesia", "chineseName": "印度尼西亚", "rate": "10 / 11*"},
-          {"country": "Japan", "chineseName": "日本", "rate": "10"},
-          {"country": "Singapore", "chineseName": "新加坡", "rate": "7"},
-          {"country": "Thailand", "chineseName": "泰国", "rate": "7"}
-        ],
-        AfricaAndMiddleEast: [
-          {"country": "South Africa", "chineseName": "南非", "rate": "15"},
-          {"country": "Kenya", "chineseName": "肯尼亚", "rate": "16"},
-          {"country": "Nigeria", "chineseName": "尼日利亚", "rate": "7.5"},
-          {"country": "Saudi Arabia", "chineseName": "沙特", "rate": "15"},
-          {"country": "United Arab Emirates", "chineseName": "阿联酋", "rate": "5"}
-        ],
-        Americas: [
-          {"country": "Canada", "chineseName": "加拿大", "rate": "5 (GST) + PST 省级"},
-          {"country": "Mexico", "chineseName": "墨西哥", "rate": "16"},
-          {"country": "United States", "chineseName": "美国", "rate": "0–约15+"},
-          {"country": "Panama", "chineseName": "巴拿马", "rate": "7"}
-        ],
-        ZeroRateOrOther: [
-          {"country": "Hong Kong", "chineseName": "香港", "rate": "0"},
-          {"country": "Kuwait", "chineseName": "科威特", "rate": "0"},
-          {"country": "Qatar", "chineseName": "卡塔尔", "rate": "0"},
-          {"country": "Brunei", "chineseName": "文莱", "rate": "0"},
-          {"country": "Bhutan", "chineseName": "不丹", "rate": "0"}
-        ]
-      },
-      
-      // 区域标签
-      regionLabels: {
-        Europe: '欧洲',
-        Asia: '亚洲',
-        AfricaAndMiddleEast: '非洲 / 中东',
-        Americas: '美洲',
-        ZeroRateOrOther: '零税率 / 其他'
-      },
-      
-      // 货币选项
-      currencies: [
-        { code: 'USD', symbol: '$', rate: 1.0 },
-        { code: 'EUR', symbol: '€', rate: 0.92 },
-        { code: 'GBP', symbol: '£', rate: 0.79 },
-        { code: 'JPY', symbol: '¥', rate: 149.0 },
-        { code: 'CNY', symbol: '¥', rate: 7.29 }
-      ]
-    };
-  },
-  
-  computed: {
-    showResults() {
-      return this.selectedCountry && this.basePrice > 0;
-    },
-    
-    taxRate() {
-      if (!this.selectedCountry) return 0;
-      
-      const rateStr = this.selectedCountry.rate.toString();
-      const match = rateStr.match(/(\d+(\.\d+)?)/);
-      
-      if (match) {
-        const rate = parseFloat(match[1]);
-        return rate / 100;
-      }
-      
-      return 0;
-    }
-  },
-  
-  methods: {
-    calculatePrices() {
-      if (!this.selectedCountry || this.basePrice <= 0) {
-        this.resetResults();
-        return;
-      }
-      
-      // 计算税费
-      this.taxAmount = this.basePrice * this.taxRate;
-      
-      // 计算含税价
-      this.finalPrice = this.basePrice + this.taxAmount;
-      
-      // 计算平台手续费
-      this.platformFee = this.finalPrice * (this.platformFeeRate / 100);
-      
-      // 计算到手价
-      this.netPrice = this.finalPrice - this.platformFee;
-      
-      // 计算百分比构成
-      const total = this.finalPrice;
-      if (total > 0) {
-        this.pricePercentage = (this.basePrice / total) * 100;
-        this.taxPercentage = (this.taxAmount / total) * 100;
-        this.feePercentage = (this.platformFee / total) * 100;
-      } else {
-        this.pricePercentage = 0;
-        this.taxPercentage = 0;
-        this.feePercentage = 0;
-      }
-    },
-    
-    resetResults() {
-      this.taxAmount = 0;
-      this.finalPrice = 0;
-      this.platformFee = 0;
-      this.netPrice = 0;
-      this.pricePercentage = 0;
-      this.taxPercentage = 0;
-      this.feePercentage = 0;
-    },
-    
-    resetInputs() {
-      this.basePrice = 100;
-      this.platformFeeRate = 5.0;
-      this.selectedCurrency = 'USD';
-      this.calculatePrices();
-    },
-    
-    setExample(type) {
-      switch(type) {
-        case 'germany':
-          this.selectedCountry = this.regions.Europe.find(c => c.country === 'Germany');
-          break;
-        case 'japan':
-          this.selectedCountry = this.regions.Asia.find(c => c.country === 'Japan');
-          break;
-        case 'china':
-          this.selectedCountry = this.regions.Asia.find(c => c.country === 'China');
-          break;
-        case 'hongkong':
-          this.selectedCountry = this.regions.ZeroRateOrOther.find(c => c.country === 'Hong Kong');
-          break;
-      }
-      this.calculatePrices();
-    },
-    
-    formatCurrency(amount) {
-      const currency = this.currencies.find(c => c.code === this.selectedCurrency);
-      if (!currency) return '$0.00';
-      
-      const convertedAmount = amount * currency.rate;
-      
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: this.selectedCurrency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(convertedAmount);
-    }
-  },
-  
-  mounted() {
-    // 页面加载时默认选择德国
-    this.selectedCountry = this.regions.Europe.find(c => c.country === 'Germany');
-    this.calculatePrices();
+// 响应式数据
+const basePrice = ref(100)
+const selectedCountryKey = ref('germany') // 改为存储key值
+const platformFeeRate = ref(5.0)
+const selectedCurrency = ref('USD')
+const taxAmount = ref(0)
+const finalPrice = ref(0)
+const platformFee = ref(0)
+const netPrice = ref(0)
+const pricePercentage = ref(0)
+const taxPercentage = ref(0)
+const feePercentage = ref(0)
+
+// 准备税率数据，为每个国家添加唯一key
+const prepareRegions = () => {
+  const rawData = {
+    Europe: [
+      {"country": "Austria", "chineseName": "奥地利", "rate": "20"},
+      {"country": "Belgium", "chineseName": "比利时", "rate": "21"},
+      {"country": "Bulgaria", "chineseName": "保加利亚", "rate": "20"},
+      {"country": "Croatia", "chineseName": "克罗地亚", "rate": "25"},
+      {"country": "Czech Republic", "chineseName": "捷克", "rate": "21"},
+      {"country": "Denmark", "chineseName": "丹麦", "rate": "25"},
+      {"country": "France", "fchineseName": "法国", "rate": "20"},
+      {"country": "Germany", "chineseName": "德国", "rate": "19"},
+      {"country": "Hungary", "chineseName": "匈牙利", "rate": "27"},
+      {"country": "Ireland", "chineseName": "爱尔兰", "rate": "23"},
+      {"country": "Italy", "chineseName": "意大利", "rate": "22"},
+      {"country": "Netherlands", "chineseName": "荷兰", "rate": "21"},
+      {"country": "Norway", "chineseName": "挪威", "rate": "25"},
+      {"country": "Spain", "chineseName": "西班牙", "rate": "21"},
+      {"country": "Sweden", "chineseName": "瑞典", "rate": "25"},
+      {"country": "United Kingdom", "chineseName": "英国", "rate": "20"}
+    ],
+    Asia: [
+      {"country": "China", "chineseName": "中国", "rate": "13 / 9 / 6*"},
+      {"country": "India", "chineseName": "印度", "rate": "28 / 18 / 12 / 5 / 0*"},
+      {"country": "Indonesia", "chineseName": "印度尼西亚", "rate": "10 / 11*"},
+      {"country": "Japan", "chineseName": "日本", "rate": "10"},
+      {"country": "Singapore", "chineseName": "新加坡", "rate": "7"},
+      {"country": "Thailand", "chineseName": "泰国", "rate": "7"}
+    ],
+    AfricaAndMiddleEast: [
+      {"country": "South Africa", "chineseName": "南非", "rate": "15"},
+      {"country": "Kenya", "chineseName": "肯尼亚", "rate": "16"},
+      {"country": "Nigeria", "chineseName": "尼日利亚", "rate": "7.5"},
+      {"country": "Saudi Arabia", "chineseName": "沙特", "rate": "15"},
+      {"country": "United Arab Emirates", "chineseName": "阿联酋", "rate": "5"}
+    ],
+    Americas: [
+      {"country": "Canada", "chineseName": "加拿大", "rate": "5 (GST) + PST 省级"},
+      {"country": "Mexico", "chineseName": "墨西哥", "rate": "16"},
+      {"country": "United States", "chineseName": "美国", "rate": "0–约15+"},
+      {"country": "Panama", "chineseName": "巴拿马", "rate": "7"}
+    ],
+    ZeroRateOrOther: [
+      {"country": "Hong Kong", "chineseName": "香港", "rate": "0"},
+      {"country": "Kuwait", "chineseName": "科威特", "rate": "0"},
+      {"country": "Qatar", "chineseName": "卡塔尔", "rate": "0"},
+      {"country": "Brunei", "chineseName": "文莱", "rate": "0"},
+      {"country": "Bhutan", "chineseName": "不丹", "rate": "0"}
+    ]
   }
-};
+  
+  // 为每个国家添加唯一key
+  const regionsWithKeys: any = {}
+  Object.keys(rawData).forEach(region => {
+    regionsWithKeys[region] = (rawData as any)[region].map((country: any) => ({
+      ...country,
+      key: `${region.toLowerCase()}_${country.country.toLowerCase().replace(/\s+/g, '_')}`
+    }))
+  })
+  
+  return regionsWithKeys
+}
+
+const regions = prepareRegions()
+
+// 根据key查找国家
+const findCountryByKey = (key: string) => {
+  for (const region of Object.values(regions)) {
+    const country = (region as any[]).find(c => c.key === key)
+    if (country) return country
+  }
+  return null
+}
+
+// 当前选中的国家（计算属性）
+const selectedCountry = computed(() => {
+  return findCountryByKey(selectedCountryKey.value)
+})
+
+// 区域标签
+const regionLabels = {
+  Europe: '欧洲',
+  Asia: '亚洲',
+  AfricaAndMiddleEast: '非洲 / 中东',
+  Americas: '美洲',
+  ZeroRateOrOther: '零税率 / 其他'
+}
+
+// 货币选项
+const currencies = [
+  { code: 'USD', symbol: '$', rate: 1.0 },
+  { code: 'EUR', symbol: '€', rate: 0.92 },
+  { code: 'GBP', symbol: '£', rate: 0.79 },
+  { code: 'JPY', symbol: '¥', rate: 149.0 },
+  { code: 'CNY', symbol: '¥', rate: 7.29 }
+]
+
+// 计算属性
+const showResults = computed(() => {
+  return selectedCountry.value && basePrice.value > 0
+})
+
+const taxRate = computed(() => {
+  if (!selectedCountry.value) return 0
+  const rateStr = selectedCountry.value.rate.toString()
+  const match = rateStr.match(/(\d+(\.\d+)?)/)
+  return match ? parseFloat(match[1]) / 100 : 0
+})
+
+// 方法
+const calculatePrices = () => {
+  if (!selectedCountry.value || basePrice.value <= 0) {
+    resetResults()
+    return
+  }
+  
+  taxAmount.value = basePrice.value * taxRate.value
+  finalPrice.value = basePrice.value + taxAmount.value
+  platformFee.value = finalPrice.value * (platformFeeRate.value / 100)
+  netPrice.value = finalPrice.value - platformFee.value
+  
+  const total = finalPrice.value
+  if (total > 0) {
+    pricePercentage.value = (basePrice.value / total) * 100
+    taxPercentage.value = (taxAmount.value / total) * 100
+    feePercentage.value = (platformFee.value / total) * 100
+  } else {
+    pricePercentage.value = 0
+    taxPercentage.value = 0
+    feePercentage.value = 0
+  }
+}
+
+const resetResults = () => {
+  taxAmount.value = 0
+  finalPrice.value = 0
+  platformFee.value = 0
+  netPrice.value = 0
+  pricePercentage.value = 0
+  taxPercentage.value = 0
+  feePercentage.value = 0
+}
+
+const resetInputs = () => {
+  basePrice.value = 100
+  platformFeeRate.value = 5.0
+  selectedCurrency.value = 'USD'
+  calculatePrices()
+}
+
+const setExample = (type: string) => {
+  switch(type) {
+    case 'germany':
+      selectedCountryKey.value = 'europe_germany'
+      break
+    case 'japan':
+      selectedCountryKey.value = 'asia_japan'
+      break
+    case 'china':
+      selectedCountryKey.value = 'asia_china'
+      break
+    case 'hongkong':
+      selectedCountryKey.value = 'zerorateorother_hong_kong'
+      break
+  }
+  calculatePrices()
+}
+
+const onCountryChange = () => {
+  calculatePrices()
+}
+
+const formatCurrency = (amount: number) => {
+  const currency = currencies.find(c => c.code === selectedCurrency.value)
+  if (!currency) return '$0.00'
+  
+  const convertedAmount = amount * currency.rate
+  
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: selectedCurrency.value,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(convertedAmount)
+}
+
+// 初始化计算
+calculatePrices()
 </script>
 
 <style>
