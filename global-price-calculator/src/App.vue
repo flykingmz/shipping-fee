@@ -315,7 +315,7 @@
               <p>📊 数据来源：各国税务局官方公告、Trading Economics、World Bank</p>
               <p>⏰ 更新频率：每月定期更新</p>
               <p>⚠️ 免责声明：本工具计算结果仅供参考，不构成专业税务建议。实际业务请咨询专业税务顾问。</p>
-              <p>📅 最后更新：2025年1月</p>
+              <p>📅 最后更新：2026年1月</p>
             </div>
           </div>
           
@@ -325,14 +325,14 @@
             <div class="contact-info">
               <p class="contact-item">
                 <span class="contact-icon">📧</span>
-                <a href="mailto:support@globalpricecalculator.com" class="contact-link">
-                  support@globalpricecalculator.com
+                <a href="mailto:flykingmz@gmail.com" class="contact-link">
+                  flykingmz@gmail.com
                 </a>
               </p>
               <p class="contact-item">
                 <span class="contact-icon">🐦</span>
-                <a href="https://twitter.com/globalpricecalc" class="contact-link">
-                  @globalpricecalc
+                <a href="" class="contact-link">
+                flykingmz@gmail.com
                 </a>
               </p>
               <p class="contact-item">
