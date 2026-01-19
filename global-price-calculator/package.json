@@ -9,11 +9,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-sitemap": "node generate-sitemap.js",
+    "build-with-sitemap": "vue-cli-service build && npm run build && npm run generate-sitemap"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
     "@vueuse/head": "^2.0.0",
+    "sitemap": "^9.0.0",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
   },
