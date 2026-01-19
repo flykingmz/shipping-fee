@@ -89,7 +89,7 @@ Allow: /*.eot$
 # ==============================================
 
 # 主要网站地图
-Sitemap: https://shipping-fee-mu.vercel.app/
+Sitemap: https://global-price-calculator.vercel.app/sitemap.xml
 
 # 附加网站地图（如果有）
 # Sitemap: https://www.yourdomain.com/sitemap-pages.xml
