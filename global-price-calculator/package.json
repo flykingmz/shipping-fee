@@ -8,10 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run generate-sitemap",
     "preview": "vite preview",
-    "generate-sitemap": "node generate-sitemap.js",
-    "build-with-sitemap": "vue-cli-service build && npm run build && npm run generate-sitemap"
+    "generate-sitemap": "node generate-sitemap.js"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
