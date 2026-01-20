@@ -13,7 +13,7 @@
       
       <div class="title-section">
         <h1 class="main-title">🌍 Global Price Calculator</h1>
-        <p class="subtitle">智能计算全球商品价格 · 含税价 · 手续费 · 到手价</p>
+        <p class="subtitle">智能计算全球商品价格 · 含税价 · 手续费 · 到手价 · VAT / GST / 消费税 标准税率</p>
       </div>
     </header>
 
@@ -381,8 +381,8 @@ import { useHead } from '@vueuse/head'
 const jsonLdData = computed(() => ({
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "国际商品价格计算器",
-        "description": "智能计算全球商品价格 · 含税价 · 手续费 · 到手价",
+        "name": "国际商品税费计算器",
+        "description": "智能计算全球商品价格 · 含税价 · 手续费 · 到手价 · VAT / GST / 消费税 标准税率",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -394,13 +394,13 @@ const jsonLdData = computed(() => ({
 
 // 注入到<head>
 useHead({
-  title: '国际商品价格计算器', // 同时设置标题
+  title: '国际商品税费计算器', // 同时设置标题
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify(jsonLdData.value)
   }],
   meta: [
-    { name: '国际商品价格计算器', content: '智能计算全球商品价格 · 含税价 · 手续费 · 到手价' }
+    { name: '国际商品税费计算器', content: '智能计算全球商品价格 · 含税价 · 手续费 · 到手价 · VAT / GST / 消费税 标准税率' }
   ]
 })
 
