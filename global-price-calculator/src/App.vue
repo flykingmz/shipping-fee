@@ -3,13 +3,16 @@
   <div id="app">
     <!-- 上层：广告位和标题 -->
     <header class="header-layer">
-      <div class="ad-top">
-        <div class="ad-content">
-          <span class="ad-badge">广告</span>
-          <span>🔥 跨境电商税务合规解决方案 - 专业服务限时优惠中</span>
-          <button class="ad-cta">了解更多 →</button>
-        </div>
-      </div>
+      <!-- GoogleAd.vue -->
+    <div class="ad-container">
+    <!-- AdSense广告单元 -->
+    <ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6532088016298458"
+     data-ad-slot="7872912625"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+    </div>
       
       <div class="title-section">
         <h1 class="main-title">🌍 Global Price Calculator</h1>
@@ -376,6 +379,39 @@
 import { ref, computed } from 'vue'
 import { Analytics } from '@vercel/analytics/vue'
 import { useHead } from '@vueuse/head'
+import { onMounted, ref } from 'vue';
+
+const adLoaded = ref(false);
+
+function loadAdScript() {
+  // 1. 检查脚本是否已存在，避免重复加载
+  if (window.adsbygoogle) {
+    adLoaded.value = true;
+    return;
+  }
+
+  // 2. 动态创建script标签
+  const script = document.createElement('script');
+  script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6532088016298458';
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+
+  // 3. 脚本加载成功后的回调
+  script.onload = () => {
+    adLoaded.value = true;
+    console.log('AdSense script loaded.');
+    // 可以在这里触发首次广告加载
+    // (window.adsbygoogle = window.adsbygoogle || []).push({});
+  };
+
+  // 4. 将脚本插入DOM
+  document.head.appendChild(script);
+}
+
+onMounted(() => {
+  // 在组件挂载后加载脚本
+  loadAdScript();
+});
 
 // 定义你的结构化数据
 const jsonLdData = computed(() => ({
