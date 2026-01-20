@@ -376,10 +376,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { Analytics } from '@vercel/analytics/vue'
 import { useHead } from '@vueuse/head'
-import { onMounted, ref } from 'vue';
 
 const adLoaded = ref(false);
 
