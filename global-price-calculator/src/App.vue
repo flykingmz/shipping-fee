@@ -427,7 +427,7 @@ const prepareRegions = () => {
       {"country": "Croatia", "chineseName": "克罗地亚", "rate": "25"},
       {"country": "Czech Republic", "chineseName": "捷克", "rate": "21"},
       {"country": "Denmark", "chineseName": "丹麦", "rate": "25"},
-      {"country": "France", "fchineseName": "法国", "rate": "20"},
+      {"country": "France", "chineseName": "法国", "rate": "20"},
       {"country": "Germany", "chineseName": "德国", "rate": "19"},
       {"country": "Hungary", "chineseName": "匈牙利", "rate": "27"},
       {"country": "Ireland", "chineseName": "爱尔兰", "rate": "23"},
